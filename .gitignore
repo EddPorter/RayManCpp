@@ -17,3 +17,5 @@ Release/
 *.sdf
 *.opensdf
 *.vcxproj.user
+
+*.tga
