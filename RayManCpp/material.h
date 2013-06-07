@@ -6,5 +6,8 @@ namespace rayman {
     float red;
     float green;
     float blue;
+
+    float specvalue;
+    float specpower;
   };
 }

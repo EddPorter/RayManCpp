@@ -12,11 +12,11 @@ namespace rayman {
     myScene.sizex = 640;
     myScene.sizey = 480;
 
-    material m1 = {0.5f, 1.0f, 1.0f, 0.0f};
+    material m1 = {0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 60.0f};
     myScene.materialContainer.push_back(m1);
-    material m2 = {0.5f, 0.0f, 1.0f, 1.0f};
+    material m2 = {0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 60.0f};
     myScene.materialContainer.push_back(m2);
-    material m3 = {0.5f, 1.0f, 0.0f, 1.0f};
+    material m3 = {0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 60.0f};
     myScene.materialContainer.push_back(m3);
 
     {
@@ -108,14 +108,25 @@ namespace rayman {
               }
             }
             if (!inShadow) {
+              // Apply lambertian reflectance.
               float lambert = (lightRay.dir * normalisedNorm) * coef;
               red += lambert * l->red * hits->mat.red;
               green += lambert * l->green * hits->mat.green;
               blue += lambert * l->blue * hits->mat.blue;
+
+              // Apply phong reflection model.
+              float reflect = 2.0f * (lightRay.dir * normalisedNorm);
+              vector phongDir = lightRay.dir - reflect * normalisedNorm;
+              float phongTerm = std::max(phongDir * viewRay.dir, 0.0f) ;
+              phongTerm = hits->mat.specvalue * powf(phongTerm, hits->mat.specpower) * coef;
+              red += phongTerm * l->red;
+              green += phongTerm * l->green;
+              blue += phongTerm * l->blue;
+
             }
           }
 
-          // For reflections.
+          // For reflections in the material.
           coef *= hits->mat.reflection;
           float reflect = 2.0f * (viewRay.dir * normalisedNorm);
           viewRay.start = intersect;
