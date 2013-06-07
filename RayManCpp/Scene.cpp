@@ -142,6 +142,10 @@ namespace rayman {
             } while (coef > 0.0f && ++iter < 10);
           }
         }
+        float exposure = -1.00f;
+        blue = 1.0f - expf(blue * exposure);
+        red = 1.0f - expf(red * exposure);
+        green = 1.0f - expf(green * exposure);
         imageFile.write(blue).write(green).write(red);
       }
     }
