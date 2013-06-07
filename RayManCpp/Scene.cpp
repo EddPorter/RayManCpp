@@ -114,15 +114,17 @@ namespace rayman {
               green += lambert * l->green * hits->mat.green;
               blue += lambert * l->blue * hits->mat.blue;
 
-              // Apply phong reflection model.
-              float reflect = 2.0f * (lightRay.dir * normalisedNorm);
-              vector phongDir = lightRay.dir - reflect * normalisedNorm;
-              float phongTerm = std::max(phongDir * viewRay.dir, 0.0f) ;
-              phongTerm = hits->mat.specvalue * powf(phongTerm, hits->mat.specpower) * coef;
-              red += phongTerm * l->red;
-              green += phongTerm * l->green;
-              blue += phongTerm * l->blue;
-
+              // Apply Blinn-Phong reflection model.
+              vector blinnDir = lightRay.dir - viewRay.dir;
+              float temp = sqrtf(blinnDir * blinnDir);
+              if (temp != 0.0f) {
+                vector normalisedBlinnDir = (1.0f / temp) * blinnDir;
+                float blinnTerm = std::max(normalisedBlinnDir * normalisedNorm, 0.0f) ;
+                blinnTerm = hits->mat.specvalue * powf(blinnTerm, hits->mat.specpower) * coef;
+                red += blinnTerm * l->red;
+                green += blinnTerm * l->green;
+                blue += blinnTerm * l->blue;
+              }
             }
           }
 
