@@ -13,8 +13,11 @@ namespace rayman {
 
     void Init(const scene & myScene);
 
-    Tga& put(uint8_t byte);
+    Tga& write(float colour);
   private:
     std::ofstream imageFile;
+
+    Tga& put(uint8_t byte);
+    float srgbEncode(float colour);
   };
 }

@@ -142,7 +142,7 @@ namespace rayman {
             } while (coef > 0.0f && ++iter < 10);
           }
         }
-        imageFile.put((unsigned char)std::min(blue * 255.0f, 255.0f)).put((unsigned char)std::min(green * 255.0f, 255.0f)).put((unsigned char)std::min(red * 255.0f, 255.0f));
+        imageFile.write(blue).write(green).write(red);
       }
     }
     return true;

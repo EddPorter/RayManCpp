@@ -29,6 +29,19 @@ namespace rayman {
     // end of the TGA header
   }
 
+  Tga & Tga::write(float colour) {
+    float f = srgbEncode(colour);
+    return put((unsigned char)std::min(f * 255.0f, 255.0f));
+  }
+
+  float Tga::srgbEncode(float c) {
+    if (c <= 0.0031308f) {
+      return 12.92f * c;
+    } else {
+      return 1.055f * powf(c, 0.4166667f) - 0.055f; // Inverse gamma 2.4
+    }
+  }
+
   Tga & Tga::put(uint8_t byte) {
     imageFile.put(byte);
     return *this;
