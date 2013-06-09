@@ -1,6 +1,7 @@
 #include "intersect.h"
 #include "light.h"
 #include "material.h"
+#include "perlin.h"
 #include "ray.h"
 #include "sphere.h"
 #include "Scene.h"
@@ -12,11 +13,11 @@ namespace rayman {
     myScene.sizex = 640;
     myScene.sizey = 480;
 
-    material m1 = {0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 60.0f};
+    material m1 = {0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 60.0f, material::turbulence, 1.0f, 0.0f, 0.0f};
     myScene.materialContainer.push_back(m1);
-    material m2 = {0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 60.0f};
+    material m2 = {0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 60.0f, material::turbulence, 0.0f, 1.0f, 0.0f};
     myScene.materialContainer.push_back(m2);
-    material m3 = {0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 60.0f};
+    material m3 = {0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 60.0f, material::turbulence, 0.0f, 0.0f, 1.0f};
     myScene.materialContainer.push_back(m3);
 
     {
@@ -115,9 +116,31 @@ namespace rayman {
                 if (!inShadow) {
                   // Apply lambertian reflectance.
                   float lambert = (lightRay.dir * normalisedNorm) * coef;
-                  red += lambert * l->red * hits->mat.red;
-                  green += lambert * l->green * hits->mat.green;
-                  blue += lambert * l->blue * hits->mat.blue;
+                  float noiseCoef = 0.0f;
+
+                  switch (hits->mat.type) {
+                    case material::turbulence:
+                      for (int level = 1; level < 10; level ++) {
+                        noiseCoef += (1.0f / level )
+                                     * fabsf(float(noise(level * 0.05 * intersect.x,
+                                                         level * 0.05 * intersect.y,
+                                                         level * 0.05 * intersect.z)));
+                      };
+                      red += coef * (lambert * l->red)
+                             * (noiseCoef * hits->mat.red + (1.0f - noiseCoef) * hits->mat.red2);
+                      green += coef * (lambert * l->green)
+                               * (noiseCoef * hits->mat.green + (1.0f - noiseCoef) * hits->mat.green2);
+                      blue += coef * (lambert * l->blue)
+                              * (noiseCoef * hits->mat.blue + (1.0f - noiseCoef) * hits->mat.blue2);
+
+                      break;
+                    case material::marble:
+                      break;
+                    default:
+                      red += lambert * l->red * hits->mat.red;
+                      green += lambert * l->green * hits->mat.green;
+                      blue += lambert * l->blue * hits->mat.blue;
+                  }
 
                   // Apply Blinn-Phong reflection model.
                   vector blinnDir = lightRay.dir - viewRay.dir;
@@ -129,6 +152,7 @@ namespace rayman {
                     red += blinnTerm * l->red;
                     green += blinnTerm * l->green;
                     blue += blinnTerm * l->blue;
+
                   }
                 }
               }
