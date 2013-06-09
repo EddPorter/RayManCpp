@@ -17,7 +17,7 @@ namespace rayman {
     myScene.materialContainer.push_back(m1);
     material m2 = {0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 60.0f, material::turbulence, 0.0f, 1.0f, 0.0f};
     myScene.materialContainer.push_back(m2);
-    material m3 = {0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 60.0f, material::turbulence, 0.0f, 0.0f, 1.0f};
+    material m3 = {0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 60.0f, material::marble, 0.0f, 0.0f, 1.0f};
     myScene.materialContainer.push_back(m3);
 
     {
@@ -135,7 +135,21 @@ namespace rayman {
 
                       break;
                     case material::marble:
+
+                      for (int level = 1; level < 10; level ++) {
+                        noiseCoef +=  (1.0f / level)
+                                      * fabsf(float(noise(level * 0.05 * intersect.x,
+                                                          level * 0.05 * intersect.y,
+                                                          level * 0.05 * intersect.z)));
+                      };
+                      noiseCoef = 0.5f * sinf( (intersect.x + intersect.y) * 0.05f + noiseCoef) + 0.5f;
+
+                      red += coef * (lambert * l->red) * (noiseCoef * hits->mat.red + (1.0f - noiseCoef) * hits->mat.red2);
+                      green += coef * (lambert * l->green) * (noiseCoef * hits->mat.green + (1.0f - noiseCoef) * hits->mat.green2);
+                      blue += coef * (lambert * l->blue) * (noiseCoef * hits->mat.blue + (1.0f - noiseCoef) * hits->mat.blue2);
+
                       break;
+                    // TODO: Implement other procedural textures, e.g. fractal, random particle deposition, checkerboard, etc.
                     default:
                       red += lambert * l->red * hits->mat.red;
                       green += lambert * l->green * hits->mat.green;
