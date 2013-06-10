@@ -1,11 +1,11 @@
 #pragma once
 
+#include "Colour.h"
+
 namespace rayman {
   struct material {
     float reflection;
-    float red;
-    float green;
-    float blue;
+    Colour colour;
 
     float specvalue;
     float specpower;
@@ -17,9 +17,7 @@ namespace rayman {
       turbulence = 3
     } type;
 
-    float red2;
-    float green2;
-    float blue2;
+    Colour colour2;
 
     float bump;
   };

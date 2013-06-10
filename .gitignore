@@ -19,4 +19,4 @@ Release/
 *.vcxproj.user
 *.suo
 
-*.tga
+output.tga

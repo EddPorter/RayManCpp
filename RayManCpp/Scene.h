@@ -1,5 +1,6 @@
 #pragma once
 
+#include "cubemap.h"
 #include "light.h"
 #include "material.h"
 #include "sphere.h"
@@ -12,6 +13,7 @@ namespace rayman {
     std::vector<sphere>   sphereContainer;
     std::vector<light>    lightContainer;
     int sizex, sizey;
+    cubemap cm;
   };
 
   bool init(char * inputName, scene & myScene);

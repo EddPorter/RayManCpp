@@ -1,3 +1,4 @@
+#include "Colour.h"
 #include "intersect.h"
 #include "light.h"
 #include "material.h"
@@ -13,11 +14,11 @@ namespace rayman {
     myScene.sizex = 640;
     myScene.sizey = 480;
 
-    material m1 = {0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 60.0f, material::turbulence, 1.0f, 0.0f, 0.0f, 0.0f};
+    material m1 = {0.2f, 1.0f, 1.0f, 0.0f, 1.0f, 60.0f, material::marble, 1.0f, 0.0f, 0.0f, 0.0f};
     myScene.materialContainer.push_back(m1);
-    material m2 = {0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 60.0f, material::turbulence, 0.0f, 1.0f, 0.0f, 0.5f};
+    material m2 = {0.2f, 0.0f, 1.0f, 1.0f, 1.0f, 60.0f, material::gouraud, 0.0f, 1.0f, 0.0f, 0.5f};
     myScene.materialContainer.push_back(m2);
-    material m3 = {0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 60.0f, material::marble, 0.0f, 0.0f, 1.0f, 0.0f};
+    material m3 = {0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 60.0f, material::turbulence, 0.0f, 0.0f, 1.0f, 0.0f};
     myScene.materialContainer.push_back(m3);
 
     {
@@ -43,6 +44,9 @@ namespace rayman {
       light l = {{640.0f, 240.0f, -10000.0f}, 0.6f, 0.7f, 1.0f};
       myScene.lightContainer.push_back(l);
     }
+
+    myScene.cm.Init();
+
     return true;
   }
 
@@ -53,7 +57,7 @@ namespace rayman {
 
     for (unsigned y = 0; y < myScene.sizey; ++y) {
       for (unsigned x = 0; x < myScene.sizex; ++x) {
-        float blue(0), red(0), green(0);
+        Colour output = {0.0f, 0.0f, 0.0f};
 
         // Compute using 4x Super Sampling in a 2x2 grid.
         for (float fragmentx = x; fragmentx < x + 1.0f; fragmentx += 0.5f) {
@@ -77,6 +81,8 @@ namespace rayman {
                 }
               }
               if (hits == nullptr) {
+                // No geometry hit, instead we simulate a virtual environment by looking the color in a environment cube map.
+                output += coef * myScene.cm.readCubemap(viewRay);
                 break;
               }
 
@@ -142,12 +148,7 @@ namespace rayman {
                                                             level * 0.05 * intersect.y,
                                                             level * 0.05 * intersect.z)));
                       };
-                      red += coef * (lambert * l->red)
-                             * (noiseCoef * hits->mat.red + (1.0f - noiseCoef) * hits->mat.red2);
-                      green += coef * (lambert * l->green)
-                               * (noiseCoef * hits->mat.green + (1.0f - noiseCoef) * hits->mat.green2);
-                      blue += coef * (lambert * l->blue)
-                              * (noiseCoef * hits->mat.blue + (1.0f - noiseCoef) * hits->mat.blue2);
+                      output += coef * (lambert * l->colour) * (noiseCoef * hits->mat.colour + (1.0f - noiseCoef) * hits->mat.colour2);
 
                       break;
                     case material::marble:
@@ -159,16 +160,12 @@ namespace rayman {
                       };
                       noiseCoef = 0.5f * sinf((intersect.x + intersect.y) * 0.05f + noiseCoef) + 0.5f;
 
-                      red += coef * (lambert * l->red) * (noiseCoef * hits->mat.red + (1.0f - noiseCoef) * hits->mat.red2);
-                      green += coef * (lambert * l->green) * (noiseCoef * hits->mat.green + (1.0f - noiseCoef) * hits->mat.green2);
-                      blue += coef * (lambert * l->blue) * (noiseCoef * hits->mat.blue + (1.0f - noiseCoef) * hits->mat.blue2);
+                      output += coef * (lambert * l->colour) * (noiseCoef * hits->mat.colour + (1.0f - noiseCoef) * hits->mat.colour2);
 
                       break;
                       // TODO: Implement other procedural textures, e.g. fractal, random particle deposition, checkerboard, etc.
                     default:
-                      red += lambert * l->red * hits->mat.red;
-                      green += lambert * l->green * hits->mat.green;
-                      blue += lambert * l->blue * hits->mat.blue;
+                      output += lambert * l->colour * hits->mat.colour;
                   }
 
                   // Apply Blinn-Phong reflection model.
@@ -178,10 +175,7 @@ namespace rayman {
                     vector normalisedBlinnDir = (1.0f / temp) * blinnDir;
                     float blinnTerm = std::max(normalisedBlinnDir * normalisedNorm, 0.0f) ;
                     blinnTerm = hits->mat.specvalue * powf(blinnTerm, hits->mat.specpower) * coef;
-                    red += blinnTerm * l->red;
-                    green += blinnTerm * l->green;
-                    blue += blinnTerm * l->blue;
-
+                    output += blinnTerm * l->colour;
                   }
                 }
               }
@@ -196,9 +190,9 @@ namespace rayman {
           }
         }
         float exposure = -1.00f;
-        blue = 1.0f - expf(blue * exposure);
-        red = 1.0f - expf(red * exposure);
-        green = 1.0f - expf(green * exposure);
+        float blue = 1.0f - expf(output.blue * exposure);
+        float red = 1.0f - expf(output.red * exposure);
+        float green = 1.0f - expf(output.green * exposure);
         imageFile.write(blue).write(green).write(red);
       }
     }

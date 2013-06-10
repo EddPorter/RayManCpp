@@ -78,6 +78,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Colour.h" />
+    <ClInclude Include="cubemap.h" />
     <ClInclude Include="intersect.h" />
     <ClInclude Include="light.h" />
     <ClInclude Include="material.h" />
@@ -93,6 +95,8 @@
     <ClInclude Include="vector.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Colour.cpp" />
+    <ClCompile Include="cubemap.cpp" />
     <ClCompile Include="intersect.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="perlin.cpp" />
@@ -102,6 +106,26 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="scene.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="alpback.tga">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="alpdown.tga">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="alpforward.tga">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="alpleft.tga">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="alpright.tga">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="alpup.tga">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
