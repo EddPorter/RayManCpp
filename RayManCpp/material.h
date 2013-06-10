@@ -20,5 +20,7 @@ namespace rayman {
     float red2;
     float green2;
     float blue2;
+
+    float bump;
   };
 }

@@ -13,11 +13,11 @@ namespace rayman {
     myScene.sizex = 640;
     myScene.sizey = 480;
 
-    material m1 = {0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 60.0f, material::turbulence, 1.0f, 0.0f, 0.0f};
+    material m1 = {0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 60.0f, material::turbulence, 1.0f, 0.0f, 0.0f, 0.0f};
     myScene.materialContainer.push_back(m1);
-    material m2 = {0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 60.0f, material::turbulence, 0.0f, 1.0f, 0.0f};
+    material m2 = {0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 60.0f, material::turbulence, 0.0f, 1.0f, 0.0f, 0.5f};
     myScene.materialContainer.push_back(m2);
-    material m3 = {0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 60.0f, material::marble, 0.0f, 0.0f, 1.0f};
+    material m3 = {0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 60.0f, material::marble, 0.0f, 0.0f, 1.0f, 0.0f};
     myScene.materialContainer.push_back(m3);
 
     {
@@ -92,6 +92,23 @@ namespace rayman {
               temp = 1.0f / sqrtf(temp);
               vector normalisedNorm = temp * norm;
 
+              if (hits->mat.bump) {
+                float noiseCoefx = float(noise(0.1 * double(intersect.x), 0.1 * double(intersect.y), 0.1 * double(intersect.z)));
+                float noiseCoefy = float(noise(0.1 * double(intersect.y), 0.1 * double(intersect.z), 0.1 * double(intersect.x)));
+                float noiseCoefz = float(noise(0.1 * double(intersect.z), 0.1 * double(intersect.x), 0.1 * double(intersect.y)));
+
+                normalisedNorm.x = (1.0f - hits->mat.bump) * normalisedNorm.x + hits->mat.bump * noiseCoefx;
+                normalisedNorm.y = (1.0f - hits->mat.bump) * normalisedNorm.y + hits->mat.bump * noiseCoefy;
+                normalisedNorm.z = (1.0f - hits->mat.bump) * normalisedNorm.z + hits->mat.bump * noiseCoefz;
+
+                temp = normalisedNorm * normalisedNorm;
+                if (temp == 0.0f) {
+                  break;
+                }
+                temp = 1.0f / sqrtf(temp);
+                normalisedNorm = temp * normalisedNorm;
+              }
+
               // Check if the incident light is pointing back at us by checking the dot product.
               for (auto l = myScene.lightContainer.cbegin(); l != myScene.lightContainer.cend(); ++l) {
                 vector dist = l->pos - intersect;
@@ -120,11 +137,10 @@ namespace rayman {
 
                   switch (hits->mat.type) {
                     case material::turbulence:
-                      for (int level = 1; level < 10; level ++) {
-                        noiseCoef += (1.0f / level )
-                                     * fabsf(float(noise(level * 0.05 * intersect.x,
-                                                         level * 0.05 * intersect.y,
-                                                         level * 0.05 * intersect.z)));
+                      for (int level = 1; level < 10; ++level) {
+                        noiseCoef += (1.0f / level) * fabsf(float(noise(level * 0.05 * intersect.x,
+                                                            level * 0.05 * intersect.y,
+                                                            level * 0.05 * intersect.z)));
                       };
                       red += coef * (lambert * l->red)
                              * (noiseCoef * hits->mat.red + (1.0f - noiseCoef) * hits->mat.red2);
@@ -137,19 +153,18 @@ namespace rayman {
                     case material::marble:
 
                       for (int level = 1; level < 10; level ++) {
-                        noiseCoef +=  (1.0f / level)
-                                      * fabsf(float(noise(level * 0.05 * intersect.x,
-                                                          level * 0.05 * intersect.y,
-                                                          level * 0.05 * intersect.z)));
+                        noiseCoef +=  (1.0f / level) * fabsf(float(noise(level * 0.05 * intersect.x,
+                                                             level * 0.05 * intersect.y,
+                                                             level * 0.05 * intersect.z)));
                       };
-                      noiseCoef = 0.5f * sinf( (intersect.x + intersect.y) * 0.05f + noiseCoef) + 0.5f;
+                      noiseCoef = 0.5f * sinf((intersect.x + intersect.y) * 0.05f + noiseCoef) + 0.5f;
 
                       red += coef * (lambert * l->red) * (noiseCoef * hits->mat.red + (1.0f - noiseCoef) * hits->mat.red2);
                       green += coef * (lambert * l->green) * (noiseCoef * hits->mat.green + (1.0f - noiseCoef) * hits->mat.green2);
                       blue += coef * (lambert * l->blue) * (noiseCoef * hits->mat.blue + (1.0f - noiseCoef) * hits->mat.blue2);
 
                       break;
-                    // TODO: Implement other procedural textures, e.g. fractal, random particle deposition, checkerboard, etc.
+                      // TODO: Implement other procedural textures, e.g. fractal, random particle deposition, checkerboard, etc.
                     default:
                       red += lambert * l->red * hits->mat.red;
                       green += lambert * l->green * hits->mat.green;
