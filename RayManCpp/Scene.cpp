@@ -20,19 +20,29 @@ namespace rayman {
     myScene.materialContainer.push_back(m2);
     material m3 = {0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 60.0f, material::turbulence, 0.0f, 0.0f, 1.0f, 0.0f};
     myScene.materialContainer.push_back(m3);
+    material m4 = {0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 60.0f, material::gouraud, 1.0f, 1.0f, 1.0f, 0.0f};
+    myScene.materialContainer.push_back(m4);
+    material m5 = {0.0f, 1.0f, 0.5f, 0.5f, 1.0f, 50.0f, material::turbulence, 0.0f, 1.0f, 1.0f, 0.0f};
+    myScene.materialContainer.push_back(m5);
 
     {
-      //sphere s = {{233.0f, 290.0f, 0.0f}, 100.0f, m1};
-      sphere s = {{150.0f, 290.0f, 0.0f}, 100.0f, m1};
+      sphere s = {{150.0f, 290.0f, 100.0f}, 100.0f, m1};
       myScene.sphereContainer.push_back(s);
     }
     {
-      //sphere s = {{407.0f, 290.0f, 0.0f}, 100.0f, m2};
       sphere s = {{500.0f, 330.0f, 0.0f}, 100.0f, m2};
       myScene.sphereContainer.push_back(s);
     }
     {
-      sphere s = {{320.0f, 140.0f, 0.0f}, 100.0f, m3};
+      sphere s = {{320.0f, 140.0f, 100.0f}, 100.0f, m3};
+      myScene.sphereContainer.push_back(s);
+    }
+    {
+      sphere s = {{530.0f, 60.0f, 0.0f}, 50.0f, m4};
+      myScene.sphereContainer.push_back(s);
+    }
+    {
+      sphere s = {{300.0f, 420.0f, 0.0f}, 50.0f, m5};
       myScene.sphereContainer.push_back(s);
     }
 
