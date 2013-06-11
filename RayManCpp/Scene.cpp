@@ -3,6 +3,7 @@
 #include "light.h"
 #include "material.h"
 #include "perlin.h"
+#include "Perspective.h"
 #include "ray.h"
 #include "sphere.h"
 #include "Scene.h"
@@ -13,6 +14,14 @@ namespace rayman {
   bool init(char * inputName, scene & myScene) {
     myScene.sizex = 640;
     myScene.sizey = 480;
+    myScene.complexity = 10;
+
+    const double PIOVER180 = 0.017453292519943295769236907684886;
+    myScene.persp.type = Perspective::Conic;
+    myScene.persp.FOV = 90.0f;
+    myScene.persp.projectionDistance = (0.5f * myScene.sizex / tanf(float(PIOVER180) * 0.5f * myScene.persp.FOV));
+    myScene.persp.clearPoint = 330.0f;
+    myScene.persp.dispersion = 10.0f;
 
     material m1 = {0.2f, 1.0f, 1.0f, 0.0f, 1.0f, 60.0f, material::marble, 1.0f, 0.0f, 0.0f, 0.0f};
     myScene.materialContainer.push_back(m1);
@@ -26,23 +35,23 @@ namespace rayman {
     myScene.materialContainer.push_back(m5);
 
     {
-      sphere s = {{150.0f, 290.0f, 100.0f}, 100.0f, m1};
+      sphere s = {{250.0f, 290.0f, 280.0f}, 100.0f, m1};
       myScene.sphereContainer.push_back(s);
     }
     {
-      sphere s = {{500.0f, 330.0f, 0.0f}, 100.0f, m2};
+      sphere s = {{500.0f, 330.0f, 480.0f}, 100.0f, m2};
       myScene.sphereContainer.push_back(s);
     }
     {
-      sphere s = {{320.0f, 140.0f, 100.0f}, 100.0f, m3};
+      sphere s = {{320.0f, 140.0f, 400.0f}, 100.0f, m3};
       myScene.sphereContainer.push_back(s);
     }
     {
-      sphere s = {{530.0f, 60.0f, 0.0f}, 50.0f, m4};
+      sphere s = {{630.0f, 60.0f, 1000.0f}, 50.0f, m4};
       myScene.sphereContainer.push_back(s);
     }
     {
-      sphere s = {{300.0f, 420.0f, 0.0f}, 50.0f, m5};
+      sphere s = {{300.0f, 450.0f, 420.0f}, 50.0f, m5};
       myScene.sphereContainer.push_back(s);
     }
 
@@ -220,24 +229,76 @@ namespace rayman {
     for (unsigned y = 0; y < myScene.sizey; ++y) {
       for (unsigned x = 0; x < myScene.sizex; ++x) {
         Colour output = {0.0f, 0.0f, 0.0f};
+        float coef(0.25f); // Each sample contributes 0.25 to the main pixel.
 
         // Compute using 4x Super Sampling in a 2x2 grid.
         for (float fragmentx = x; fragmentx < x + 1.0f; fragmentx += 0.5f) {
           for (float fragmenty = y; fragmenty < y + 1.0f; fragmenty += 0.5f) {
-            // Each sample contributes 0.25 to the main pixel.
-            float coef(0.25f);
 
-            // Cast the ray.
-            // There is no natural starting point (due to us using orthographic projection)
-            // so arbitrarily put it 1000.0f behind the "centre" of the scene.
-            ray viewRay = {{float(fragmentx), float(fragmenty), -1000.0f}, {0.0f, 0.0f, 1.0f}};
-            Colour temp = ThrowRay(viewRay, myScene);
+            switch (myScene.persp.type) {
+              case Perspective::Orthogonal: {
+                // Cast the ray.
+                // There is no natural starting point (due to us using orthographic projection)
+                // so arbitrarily put it 1000.0f behind the "centre" of the scene.
+                ray viewRay = {{float(fragmentx), float(fragmenty), -1000.0f}, {0.0f, 0.0f, 1.0f}};
+                Colour temp = ThrowRay(viewRay, myScene);
 
-            temp.blue = 1.0f - expf(temp.blue * exposure);
-            temp.red = 1.0f - expf(temp.red * exposure);
-            temp.green = 1.0f - expf(temp.green * exposure);
+                temp.blue = 1.0f - expf(temp.blue * exposure);
+                temp.red = 1.0f - expf(temp.red * exposure);
+                temp.green = 1.0f - expf(temp.green * exposure);
 
-            output += coef * temp;
+                output += coef * temp;
+              }
+              break;
+              case Perspective::Conic: {
+                vector dir = {(fragmentx - 0.5f * myScene.sizex) / myScene.persp.projectionDistance,
+                              (fragmenty - 0.5f * myScene.sizey) / myScene.persp.projectionDistance,
+                              1.0f
+                             };
+
+                float norm = dir * dir;
+                if (norm == 0.0f) {
+                  break;
+                }
+                dir = dir * (1.0f / sqrtf(norm));
+                // The starting point is always the optical center of the camera.
+                // We will add some perturbation later to simulate a depth of field effect.
+                point start = {0.5f * myScene.sizex,  0.5f * myScene.sizey, 0.0f};
+
+                // The point aimed is one of the invariant of the current pixel.
+                // That means that by design every ray that contribute to the current pixel must go through that point in space (on the "sharp" plane).
+                // Of course the divergence is caused by the direction of the ray itself.
+                point ptAimed = start + myScene.persp.clearPoint * dir;
+
+                Colour temp = {0.0f, 0.0f, 0.0f};
+                for (int i = 0; i < myScene.complexity; ++i) {
+                  ray viewRay = {{start.x, start.y, start.z}, {dir.x, dir.y, dir.z}};
+
+                  if (myScene.persp.dispersion != 0.0f) {
+                    vector vDisturbance;
+                    vDisturbance.x = (myScene.persp.dispersion / RAND_MAX) * (1.0f * rand());
+                    vDisturbance.y = (myScene.persp.dispersion / RAND_MAX) * (1.0f * rand());
+                    vDisturbance.z = 0.0f;
+
+                    viewRay.start = viewRay.start + vDisturbance;
+                    viewRay.dir = ptAimed - viewRay.start;
+
+                    // Normalise
+                    norm = viewRay.dir * viewRay.dir;
+                    if (norm == 0.0f) {
+                      break;
+                    }
+                    viewRay.dir *= 1.0f / sqrtf(norm);
+                  }
+                  Colour rayResult = ThrowRay(viewRay, myScene); //, context::getDefaultAir());
+                  //fTotalWeight += 1.0f;
+                  temp += rayResult;
+                }
+                temp = (1.0f / myScene.complexity) * temp;
+                output += coef * temp;
+              }
+              break;
+            }
           }
         }
         imageFile.write(output.blue).write(output.green).write(output.red);

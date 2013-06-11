@@ -84,6 +84,7 @@
     <ClInclude Include="light.h" />
     <ClInclude Include="material.h" />
     <ClInclude Include="perlin.h" />
+    <ClInclude Include="Perspective.h" />
     <ClInclude Include="point.h" />
     <ClInclude Include="ray.h" />
     <ClInclude Include="Scene.h">
@@ -100,6 +101,7 @@
     <ClCompile Include="intersect.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="perlin.cpp" />
+    <ClCompile Include="Perspective.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Tga.cpp" />
     <ClCompile Include="vector.cpp" />
