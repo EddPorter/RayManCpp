@@ -129,9 +129,7 @@ namespace rayman {
           switch (hits->mat.type) {
             case material::turbulence:
               for (int level = 1; level < 10; ++level) {
-                noiseCoef += (1.0f / level) * fabsf(float(noise(level * 0.05 * intersect.x,
-                                                    level * 0.05 * intersect.y,
-                                                    level * 0.05 * intersect.z)));
+                noiseCoef += (1.0f / level) * fabsf(float(noise(level * 0.05 * intersect.x, level * 0.05 * intersect.y, level * 0.05 * intersect.z)));
               };
               output += coef * (lambert * l->colour) * (noiseCoef * hits->mat.colour + (1.0f - noiseCoef) * hits->mat.colour2);
 
@@ -139,9 +137,7 @@ namespace rayman {
             case material::marble:
 
               for (int level = 1; level < 10; level ++) {
-                noiseCoef +=  (1.0f / level) * fabsf(float(noise(level * 0.05 * intersect.x,
-                                                     level * 0.05 * intersect.y,
-                                                     level * 0.05 * intersect.z)));
+                noiseCoef +=  (1.0f / level) * fabsf(float(noise(level * 0.05 * intersect.x, level * 0.05 * intersect.y, level * 0.05 * intersect.z)));
               };
               noiseCoef = 0.5f * sinf((intersect.x + intersect.y) * 0.05f + noiseCoef) + 0.5f;
 

@@ -5,7 +5,7 @@ using namespace std;
 
 namespace rayman {
   cubemap::cubemap() :
-    sizeX(0), sizeY(0), exposure(1.0f), bExposed(false), bsRGB(false) {
+    sizeX(0), sizeY(0), exposure(1.0f), bExposed(true), bsRGB(true) {
     name[cubemap::backward] = "alpback.tga";
     name[cubemap::forward] = "alpforward.tga";
     name[cubemap::up] = "alpup.tga";
@@ -111,8 +111,7 @@ namespace rayman {
       } else if (myRay.dir.x < 0.0f) {
         outputColour = readTexture(colour, cubemap::left * sizeX * sizeY,
                                    1.0f - (myRay.dir.z / myRay.dir.x + 1.0f) * 0.5f,
-                                   1.0f - ( myRay.dir.y / myRay.dir.x + 1.0f) * 0.5f,
-                                   sizeX, sizeY);
+                                   1.0f - ( myRay.dir.y / myRay.dir.x + 1.0f) * 0.5f, sizeX, sizeY);
       }
     } else if ((fabsf(myRay.dir.y) >= fabsf(myRay.dir.x)) && (fabsf(myRay.dir.y) >= fabsf(myRay.dir.z))) {
       if (myRay.dir.y > 0.0f) {
@@ -135,6 +134,28 @@ namespace rayman {
                                    1.0f - (myRay.dir.y / myRay.dir.z + 1) * 0.5f, sizeX, sizeY);
       }
     }
+
+    if (bsRGB)
+    {
+       // We make sure the data that was in sRGB storage mode is brought back to a  linear format.
+      // We don't need the full accuracy of the sRGBEncode function so a powf should be sufficient enough.
+       outputColour.blue   = powf(outputColour.blue, 2.2f);
+       outputColour.red    = powf(outputColour.red, 2.2f);
+       outputColour.green  = powf(outputColour.green, 2.2f);
+    }
+
+    if (bExposed)
+    {
+        // The LDR (low dynamic range) images were supposedly already exposed, but we need to make the inverse transformation
+        // so that we can expose them a second time.
+        outputColour.blue  = -logf(1.001f - outputColour.blue);
+        outputColour.red   = -logf(1.001f - outputColour.red);
+        outputColour.green = -logf(1.001f - outputColour.green);
+    }
+
+    outputColour.blue  /= exposure;
+    outputColour.red   /= exposure;
+    outputColour.green /= exposure;
 
     return outputColour;
   }
