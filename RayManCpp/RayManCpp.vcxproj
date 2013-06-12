@@ -78,6 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Blob.h" />
     <ClInclude Include="Colour.h" />
     <ClInclude Include="cubemap.h" />
     <ClInclude Include="intersect.h" />
@@ -96,6 +97,7 @@
     <ClInclude Include="vector.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Blob.cpp" />
     <ClCompile Include="Colour.cpp" />
     <ClCompile Include="cubemap.cpp" />
     <ClCompile Include="intersect.cpp" />

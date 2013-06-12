@@ -54,6 +54,9 @@
     <ClInclude Include="Perspective.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Blob.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -81,6 +84,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Perspective.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Blob.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

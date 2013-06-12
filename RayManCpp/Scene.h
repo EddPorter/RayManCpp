@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Blob.h"
 #include "cubemap.h"
 #include "light.h"
 #include "material.h"
@@ -13,6 +14,7 @@ namespace rayman {
     std::vector<material> materialContainer;
     std::vector<sphere>   sphereContainer;
     std::vector<light>    lightContainer;
+    std::vector<Blob>     blobContainer;
     int sizex, sizey;
     cubemap cm;
     Perspective persp;
