@@ -20,5 +20,8 @@ namespace rayman {
     Colour colour2;
 
     float bump;
+
+    float refraction;
+    float density;
   };
 }

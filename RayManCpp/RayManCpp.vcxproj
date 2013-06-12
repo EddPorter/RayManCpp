@@ -80,6 +80,7 @@
   <ItemGroup>
     <ClInclude Include="Blob.h" />
     <ClInclude Include="Colour.h" />
+    <ClInclude Include="Context.h" />
     <ClInclude Include="cubemap.h" />
     <ClInclude Include="intersect.h" />
     <ClInclude Include="light.h" />
@@ -99,6 +100,7 @@
   <ItemGroup>
     <ClCompile Include="Blob.cpp" />
     <ClCompile Include="Colour.cpp" />
+    <ClCompile Include="Context.cpp" />
     <ClCompile Include="cubemap.cpp" />
     <ClCompile Include="intersect.cpp" />
     <ClCompile Include="Main.cpp" />

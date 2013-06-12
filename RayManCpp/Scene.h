@@ -19,6 +19,12 @@ namespace rayman {
     cubemap cm;
     Perspective persp;
     unsigned complexity;
+    struct {
+      float fMidPoint;
+      float fPower;
+      float fBlack;
+      float fPowerScale;
+    } tonemap;
   };
 
   bool init(char * inputName, scene & myScene);
